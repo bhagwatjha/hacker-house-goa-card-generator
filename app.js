@@ -1497,31 +1497,73 @@ function shareToX() {
     tweetText = `Ready for Hacker House Goa 2026! Set my PFP frame. Let's build, ship, and repeat in paradise! 🌴🌊\n\n#FrameInGoa @HackerHouseGoa`;
   }
   
-  // 1. Copy image to clipboard automatically if supported
   const canvas = document.getElementById('generator-canvas');
-  if (canvas) {
-    try {
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const item = new ClipboardItem({ "image/png": blob });
-        navigator.clipboard.write([item])
-          .then(() => {
-            showToast("📋 ID Card copied to clipboard! Paste (Cmd+V/Ctrl+V) it in the X composer.");
-          })
-          .catch(err => {
-            console.warn("Auto-copy to clipboard failed, downloading instead:", err);
-            // Fallback warning
-            showToast("⚠️ Clipboard blocked. Download the card and upload it to X!");
-          });
-      }, 'image/png');
-    } catch (e) {
-      console.warn("Clipboard API not supported in this browser:", e);
-    }
+  if (!canvas) {
+    // Fallback if no canvas found
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+    window.open(shareUrl, '_blank');
+    return;
   }
 
-  // 2. Open X Compose URL
-  const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
-  window.open(shareUrl, '_blank');
+  showToast("📤 Generating share link & copying card to clipboard...");
+
+  // 1. Copy image to clipboard automatically
+  try {
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const item = new ClipboardItem({ "image/png": blob });
+      navigator.clipboard.write([item])
+        .then(() => console.log("Auto-copy to clipboard successful"))
+        .catch(err => console.warn("Clipboard write failed", err));
+    }, 'image/png');
+  } catch (e) {
+    console.warn("Clipboard API not supported", e);
+  }
+
+  // 2. Upload to tmpfiles.org to get a shareable URL
+  canvas.toBlob((blob) => {
+    if (!blob) {
+      // Fallback if blob conversion fails
+      const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+      window.open(shareUrl, '_blank');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', blob, `hh_goa_${currentFormat}_card.png`);
+
+    fetch('https://tmpfiles.org/api/v1/upload', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Upload failed");
+      return response.json();
+    })
+    .then(result => {
+      if (result.status === 'success' && result.data && result.data.url) {
+        // Convert to raw download link (tmpfiles.org/123/name.png -> tmpfiles.org/dl/123/name.png)
+        const rawUrl = result.data.url;
+        const dlUrl = rawUrl.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+        
+        // Append URL to the tweet
+        const tweetWithImage = `${tweetText}\n\n${dlUrl}`;
+        const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetWithImage)}`;
+        
+        window.open(shareUrl, '_blank');
+        showToast("✅ Share link ready! Tweet opened.");
+      } else {
+        throw new Error("Invalid response format");
+      }
+    })
+    .catch(err => {
+      console.warn("tmpfiles.org upload failed:", err);
+      // Fallback - Open standard tweet and remind user to paste
+      const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+      window.open(shareUrl, '_blank');
+      showToast("📋 Copy successful! Paste (Cmd+V/Ctrl+V) the card in the composer.");
+    });
+  }, 'image/png');
 }
 
 // Set active badge style theme

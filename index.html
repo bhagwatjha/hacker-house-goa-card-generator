@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HH Goa 2026 - ID Card & PFP Generator</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Generate your custom HH Goa 2026 event badge and PFP frame instantly. Upload your photo, customize your details, download, and share on X!">
+  <meta name="keywords" content="HH Goa, Hacker House Goa, ID Card Generator, PFP Frame, FrameInGoa, Web Tool">
+  <link rel="icon" type="image/png" href="badge_template.jpg">
+  
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts: Retro Serif, Devanagari retro feel, Monospace, Sans-serif -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=Yatra+One&display=swap" rel="stylesheet">
+  
+  <!-- HEIC conversion library -->
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header>
+    <div class="nav-container">
+      <div class="logo">
+        <i class="fa-solid fa-umbrella-beach"></i>
+        <span>HH GOA <span class="year">2026</span></span>
+      </div>
+      <div class="nav-links">
+        <a href="https://twitter.com/search?q=%23FrameInGoa" target="_blank" class="hashtag-link">
+          <i class="fa-brands fa-twitter"></i> #FrameInGoa
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    <div class="hero-section">
+      <h1>Hacker Goa House Badge Generator</h1>
+      <p class="subtitle">Customize your official HH Goa 2026 event card or profile picture frame. Customize, download, and share on X!</p>
+    </div>
+
+    <div class="editor-grid">
+      <!-- Left Column: Canvas Preview & Image Controls -->
+      <div class="preview-card">
+        <div class="format-toggle">
+          <button id="tab-badge" class="toggle-btn active" onclick="switchFormat('badge')">
+            <i class="fa-solid fa-id-card"></i> Format B: Builder ID Card
+          </button>
+          <button id="tab-pfp" class="toggle-btn" onclick="switchFormat('pfp')">
+            <i class="fa-solid fa-user-circle"></i> Format A: PFP Frame
+          </button>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="generator-canvas"></canvas>
+          
+          <!-- Loading Overlay -->
+          <div id="canvas-loading" class="loading-overlay hidden">
+            <div class="spinner"></div>
+            <p>Processing Image...</p>
+          </div>
+        </div>
+
+        <!-- Image Position Adjustments -->
+        <div class="adjustments-panel">
+          <div class="section-title">
+            <i class="fa-solid fa-sliders"></i> Adjust Uploaded Photo
+          </div>
+          <div class="sliders">
+            <div class="slider-group">
+              <label for="slider-scale"><i class="fa-solid fa-magnifying-glass-plus"></i> Zoom</label>
+              <input type="range" id="slider-scale" min="0.1" max="3" step="0.01" value="1">
+            </div>
+            <div class="slider-group">
+              <label for="slider-rotate"><i class="fa-solid fa-rotate"></i> Rotate</label>
+              <input type="range" id="slider-rotate" min="-180" max="180" step="1" value="0">
+            </div>
+            <div class="slider-group">
+              <label for="slider-x"><i class="fa-solid fa-arrows-left-right"></i> Position X</label>
+              <input type="range" id="slider-x" min="-300" max="300" step="1" value="0">
+            </div>
+            <div class="slider-group">
+              <label for="slider-y"><i class="fa-solid fa-arrows-up-down"></i> Position Y</label>
+              <input type="range" id="slider-y" min="-300" max="300" step="1" value="0">
+            </div>
+          </div>
+          <button id="btn-reset-transform" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-rotate-left"></i> Reset Photo Position
+          </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button id="btn-download" class="btn btn-primary" onclick="downloadImage()">
+            <i class="fa-solid fa-download"></i> Download PNG
+          </button>
+          <button id="btn-share" class="btn btn-twitter" onclick="shareToX()">
+            <i class="fa-brands fa-x-twitter"></i> Share to X
+          </button>
+        </div>
+        <p class="share-tip"><i class="fa-solid fa-circle-info"></i> Note: Direct image sharing via browser is not supported by X. Click <strong>Share to X</strong>, paste the downloaded image into the compose box, and post!</p>
+      </div>
+
+      <!-- Right Column: Forms & Upload -->
+      <div class="controls-card">
+        <!-- Upload Section -->
+        <div class="control-section upload-section">
+          <h2>1. Upload Your Photo</h2>
+          <div id="drop-zone" class="drop-zone">
+            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+            <p class="drop-text">Drag & drop your photo here or <span class="browse-link">browse</span></p>
+            <p class="file-info">Supports JPG, PNG, HEIC (Auto-rotation supported)</p>
+            <input type="file" id="file-input" accept="image/*,.heic" class="hidden">
+          </div>
+          <div id="upload-success" class="upload-success hidden">
+            <i class="fa-solid fa-circle-check"></i>
+            <span id="success-filename">photo.jpg loaded</span>
+            <button class="btn-change-photo" onclick="triggerFileInput()"><i class="fa-solid fa-rotate"></i> Change</button>
+          </div>
+        </div>
+
+        <!-- Customization Fields Section -->
+        <div id="badge-fields-panel" class="control-section badge-fields">
+          <h2>2. Customize Badge Details</h2>
+          
+          <!-- Badge Theme Selector -->
+          <div class="form-group">
+            <label>Select Badge Style</label>
+            <div class="theme-selector badge-theme-selector">
+              <div class="theme-option active" data-badge-theme="sunrise" onclick="setBadgeTheme('sunrise')">
+                <div class="theme-preview badge-sunrise-preview"></div>
+                <span>Sunrise Beach</span>
+              </div>
+              <div class="theme-option" data-badge-theme="signpost" onclick="setBadgeTheme('signpost')">
+                <div class="theme-preview badge-signpost-preview"></div>
+                <span>Hacker Signpost</span>
+              </div>
+              <div class="theme-option" data-badge-theme="agenda" onclick="setBadgeTheme('agenda')">
+                <div class="theme-preview badge-agenda-preview"></div>
+                <span>Agenda Table</span>
+              </div>
+              <div class="theme-option" data-badge-theme="laptop" onclick="setBadgeTheme('laptop')">
+                <div class="theme-preview badge-laptop-preview"></div>
+                <span>Coding Laptop</span>
+              </div>
+              <div class="theme-option" data-badge-theme="classic" onclick="setBadgeTheme('classic')">
+                <div class="theme-preview badge-classic-preview"></div>
+                <span>Classic Retro</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Name Field -->
+          <div class="form-group">
+            <label for="input-name">Full Name</label>
+            <input type="text" id="input-name" placeholder="ANTIGRAVITY" maxlength="24" value="">
+            <span class="field-hint">Max 24 characters to fit the badge</span>
+          </div>
+
+          <!-- Stack/Role Field -->
+          <div class="form-group">
+            <label for="input-role">Stack / Role</label>
+            <input type="text" id="input-role" placeholder="FULL STACK DEVELOPER" maxlength="26" value="">
+            <div class="quick-tags" id-for="input-role">
+              <span class="tag" onclick="setFieldValue('input-role', 'FULL STACK DEVELOPER')">Full Stack</span>
+              <span class="tag" onclick="setFieldValue('input-role', 'FRONTEND ENGINEER')">Frontend</span>
+              <span class="tag" onclick="setFieldValue('input-role', 'BACKEND ARCHITECT')">Backend</span>
+              <span class="tag" onclick="setFieldValue('input-role', 'AI ENGINEER')">AI / ML</span>
+              <span class="tag" onclick="setFieldValue('input-role', 'WEB3 BUILDER')">Web3</span>
+            </div>
+          </div>
+
+          <!-- Builder Class Field -->
+          <div class="form-group">
+            <label for="input-class">Builder Class</label>
+            <input type="text" id="input-class" placeholder="TERMINAL WIZARD" maxlength="20" value="">
+            <div class="quick-tags" id-for="input-class">
+              <span class="tag" onclick="setFieldValue('input-class', 'TERMINAL WIZARD')">Terminal Wizard</span>
+              <span class="tag" onclick="setFieldValue('input-class', 'CSS WHISPERER')">CSS Whisperer</span>
+              <span class="tag" onclick="setFieldValue('input-class', 'BUG HUNTER')">Bug Hunter</span>
+              <span class="tag" onclick="setFieldValue('input-class', 'AI WRANGLER')">AI Wrangler</span>
+              <span class="tag" onclick="setFieldValue('input-class', 'GIT MASTER')">Git Master</span>
+            </div>
+          </div>
+
+          <!-- Beach Bag Section -->
+          <div class="form-group">
+            <label>Beach Bag Essentials (Select 3)</label>
+            <div class="beach-bag-inputs">
+              <div class="bag-item-select">
+                <select id="bag-item-1">
+                  <option value="🥥 COCONUT" selected>🥥 Coconut</option>
+                  <option value="🌶️ CHILLI">🌶️ Chilli</option>
+                  <option value="🕶️ SUNGLASSES">🕶️ Sunglasses</option>
+                  <option value="🩴 FLIP FLOPS">🩴 Flip Flops</option>
+                  <option value="🍹 MOCKTAIL">🍹 Mocktail</option>
+                </select>
+              </div>
+              <div class="bag-item-select">
+                <select id="bag-item-2">
+                  <option value="💻 VS CODE" selected>💻 VS Code</option>
+                  <option value="⌨️ KEYBOARD">⌨️ Keyboard</option>
+                  <option value="📟 TERMINAL">📟 Terminal</option>
+                  <option value="🐙 GITHUB">🐙 GitHub</option>
+                  <option value="☕ COFFEE">☕ Coffee</option>
+                </select>
+              </div>
+              <div class="bag-item-select">
+                <select id="bag-item-3">
+                  <option value="🎧 LO-FI BEATS" selected>🎧 Lo-fi Beats</option>
+                  <option value="🌊 RETROSYNTH">🌊 Retrosynth</option>
+                  <option value="🎸 GOA PSY">🎸 Goa Psy</option>
+                  <option value="🌅 SUNSET VIBE">🌅 Sunset Vibe</option>
+                  <option value="🍕 RETRO PIZZA">🍕 Retro Pizza</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Currently Shipping Field -->
+          <div class="form-group">
+            <label for="input-shipping">Currently Shipping</label>
+            <input type="text" id="input-shipping" placeholder="BUILDING THE FUTURE" maxlength="22" value="">
+            <div class="quick-tags" id-for="input-shipping">
+              <span class="tag" onclick="setFieldValue('input-shipping', 'BUILDING THE FUTURE')">Future</span>
+              <span class="tag" onclick="setFieldValue('input-shipping', 'AI AGENTS')">AI Agents</span>
+              <span class="tag" onclick="setFieldValue('input-shipping', 'DECENTRALIZED WEB')">Web3 App</span>
+              <span class="tag" onclick="setFieldValue('input-shipping', 'OPEN SOURCE')">Open Source</span>
+            </div>
+          </div>
+
+          <!-- Builder ID Field -->
+          <div class="form-group">
+            <label for="input-id">Builder ID</label>
+            <div class="input-with-button">
+              <input type="text" id="input-id" placeholder="e.g. #HH-GOA-7757" maxlength="12" value="">
+              <button class="btn btn-secondary btn-sm" onclick="generateRandomID()">
+                <i class="fa-solid fa-dice"></i> Roll
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="pfp-fields-panel" class="control-section pfp-fields hidden">
+          <h2>2. Customize PFP Frame</h2>
+          <!-- Frame Styles -->
+          <div class="form-group">
+            <label>Select Frame Style</label>
+            <div class="theme-selector">
+              <div class="theme-option active" data-theme="official-ring" onclick="setTheme('official-ring')">
+                <div class="theme-preview official-ring-preview"></div>
+                <span>Official Ring</span>
+              </div>
+              <div class="theme-option" data-theme="tropical-palm" onclick="setTheme('tropical-palm')">
+                <div class="theme-preview tropical-palm-preview"></div>
+                <span>Tropical Palm</span>
+              </div>
+              <div class="theme-option" data-theme="sunset-flora" onclick="setTheme('sunset-flora')">
+                <div class="theme-preview sunset-flora-preview"></div>
+                <span>Sunset Flora</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <p>&copy; 2026 Hacker House Goa. Built with 🌴 for builders. #FrameInGoa</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

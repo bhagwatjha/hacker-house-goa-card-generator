@@ -1453,6 +1453,38 @@ function downloadImage() {
   document.body.removeChild(link);
 }
 
+function showToast(message) {
+  let toast = document.getElementById('share-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'share-toast';
+    toast.style.position = 'fixed';
+    toast.style.bottom = '30px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.backgroundColor = '#032f14';
+    toast.style.color = '#fcfaf2';
+    toast.style.padding = '12px 24px';
+    toast.style.borderRadius = '8px';
+    toast.style.border = '2px solid #fac002';
+    toast.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+    toast.style.fontFamily = "'Space Mono', monospace";
+    toast.style.fontSize = '12.5px';
+    toast.style.fontWeight = 'bold';
+    toast.style.zIndex = '9999';
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.4s ease';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  // Trigger reflow to restart transition
+  toast.offsetHeight;
+  toast.style.opacity = '1';
+  setTimeout(() => {
+    toast.style.opacity = '0';
+  }, 4500);
+}
+
 // Open X (Twitter) Web Intent Share Compose box
 function shareToX() {
   const name = (document.getElementById('input-name').value || 'Builder').trim();
@@ -1465,7 +1497,29 @@ function shareToX() {
     tweetText = `Ready for Hacker House Goa 2026! Set my PFP frame. Let's build, ship, and repeat in paradise! 🌴🌊\n\n#FrameInGoa @HackerHouseGoa`;
   }
   
-  // URL encode text
+  // 1. Copy image to clipboard automatically if supported
+  const canvas = document.getElementById('generator-canvas');
+  if (canvas) {
+    try {
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const item = new ClipboardItem({ "image/png": blob });
+        navigator.clipboard.write([item])
+          .then(() => {
+            showToast("📋 ID Card copied to clipboard! Paste (Cmd+V/Ctrl+V) it in the X composer.");
+          })
+          .catch(err => {
+            console.warn("Auto-copy to clipboard failed, downloading instead:", err);
+            // Fallback warning
+            showToast("⚠️ Clipboard blocked. Download the card and upload it to X!");
+          });
+      }, 'image/png');
+    } catch (e) {
+      console.warn("Clipboard API not supported in this browser:", e);
+    }
+  }
+
+  // 2. Open X Compose URL
   const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
   window.open(shareUrl, '_blank');
 }

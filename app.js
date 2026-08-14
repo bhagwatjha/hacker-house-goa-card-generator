@@ -1,22 +1,31 @@
 // State Management
 let currentFormat = 'badge'; // 'badge' or 'pfp'
 let templateImage = new Image();
+templateImage.crossOrigin = "anonymous";
 let userImage = null;
 let isTemplateLoaded = false;
 
 // Preload PFP Assets from hhgoa.com
 let assetGoaHindi = new Image();
+assetGoaHindi.crossOrigin = "anonymous";
 let assetFooterTrees = new Image();
+assetFooterTrees.crossOrigin = "anonymous";
 let isGoaHindiLoaded = false;
 let isFooterTreesLoaded = false;
 
 // Badge Background Assets
 let badgeBgSunrise = new Image();
+badgeBgSunrise.crossOrigin = "anonymous";
 let badgeBgSignpost = new Image();
+badgeBgSignpost.crossOrigin = "anonymous";
 let badgeBgAgenda = new Image();
+badgeBgAgenda.crossOrigin = "anonymous";
 let badgeBgLaptop = new Image();
+badgeBgLaptop.crossOrigin = "anonymous";
 let badgeBgClassic = new Image();
+badgeBgClassic.crossOrigin = "anonymous";
 let assetHackerHouseLogo = new Image();
+assetHackerHouseLogo.crossOrigin = "anonymous";
 
 let isBgSunriseLoaded = false;
 let isBgSignpostLoaded = false;

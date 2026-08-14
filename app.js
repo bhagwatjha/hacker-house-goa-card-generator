@@ -22,8 +22,6 @@ let badgeBgAgenda = new Image();
 badgeBgAgenda.crossOrigin = "anonymous";
 let badgeBgLaptop = new Image();
 badgeBgLaptop.crossOrigin = "anonymous";
-let badgeBgClassic = new Image();
-badgeBgClassic.crossOrigin = "anonymous";
 let assetHackerHouseLogo = new Image();
 assetHackerHouseLogo.crossOrigin = "anonymous";
 
@@ -31,10 +29,9 @@ let isBgSunriseLoaded = false;
 let isBgSignpostLoaded = false;
 let isBgAgendaLoaded = false;
 let isBgLaptopLoaded = false;
-let isBgClassicLoaded = false;
 let isHackerHouseLogoLoaded = false;
 
-let currentBadgeTheme = 'sunrise'; // 'sunrise', 'signpost', 'agenda', 'laptop', 'classic'
+let currentBadgeTheme = 'sunrise'; // 'sunrise', 'signpost', 'agenda', 'laptop'
 
 // QRious library reference
 let qrEncoder = null;
@@ -135,15 +132,6 @@ window.addEventListener('DOMContentLoaded', () => {
     console.error('Failed to load details.png');
   };
   badgeBgLaptop.src = 'assets/details.png';
-
-  badgeBgClassic.onload = () => {
-    isBgClassicLoaded = true;
-    redraw();
-  };
-  badgeBgClassic.onerror = () => {
-    console.error('Failed to load badge_template.jpg for bg');
-  };
-  badgeBgClassic.src = 'badge_template.jpg';
 
   assetHackerHouseLogo.onload = () => {
     isHackerHouseLogoLoaded = true;
@@ -529,11 +517,11 @@ function drawBadge(canvas) {
   const redTextColor = '#db3d5b';
   const yellowBgColor = '#fac002';
   
-  const isClassic = currentBadgeTheme === 'classic';
+  const isClassic = false;
 
   // 1. Resolve Background Image based on Selected Theme
-  let bgImage = badgeBgClassic;
-  let isBgLoaded = isBgClassicLoaded;
+  let bgImage = badgeBgSunrise;
+  let isBgLoaded = isBgSunriseLoaded;
 
   if (currentBadgeTheme === 'sunrise') {
     bgImage = badgeBgSunrise;
@@ -547,9 +535,6 @@ function drawBadge(canvas) {
   } else if (currentBadgeTheme === 'laptop') {
     bgImage = badgeBgLaptop;
     isBgLoaded = isBgLaptopLoaded;
-  } else if (currentBadgeTheme === 'classic') {
-    bgImage = badgeBgClassic;
-    isBgLoaded = isBgClassicLoaded;
   }
 
   // 2. Draw Card Border Margin & Background Cutout
@@ -587,6 +572,23 @@ function drawBadge(canvas) {
     // Fallback solid cream card background
     ctx.fillStyle = creamBgColor;
     ctx.fillRect(0, 0, BADGE_WIDTH, BADGE_HEIGHT);
+  }
+
+  // Cover up pre-filled static values on the Classic Retro template before drawing user customizations
+  if (isClassic) {
+    ctx.fillStyle = darkGreenColor;
+    ctx.fillRect(cardCenterX - 190, 652 - 25, 380, 50); // Name cover
+
+    ctx.fillStyle = yellowBgColor;
+    ctx.fillRect(cardCenterX - 190, 713 - 15, 380, 30); // Role cover
+
+    ctx.fillStyle = creamBgColor;
+    ctx.fillRect(128.5 - 75, 786 - 15, 150, 30); // Class cover
+    ctx.fillRect(77, 832, 105, 105); // QR code cover
+    ctx.fillRect(260, 765, 170, 105); // Bag items cover
+    ctx.fillRect(540.5 - 85, 792 - 15, 170, 30); // Shipping cover
+    ctx.fillRect(539.5 - 85, 853 - 15, 170, 30); // ID cover
+    ctx.fillRect(460, 872, 160, 34); // Barcode cover
   }
 
   // 3. Draw Thick Outer Frame

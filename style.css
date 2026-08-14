@@ -607,12 +607,6 @@ input[type="text"]:focus, select:focus {
   background-position: center;
 }
 
-.badge-classic-preview {
-  background-image: url('badge_template.jpg');
-  background-size: cover;
-  background-position: center;
-}
-
 .theme-option span {
   font-size: 0.75rem;
   font-weight: 600;

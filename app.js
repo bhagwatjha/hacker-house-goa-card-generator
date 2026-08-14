@@ -1516,15 +1516,26 @@ function shareToX() {
 
   showToast("📤 Generating share link & copying card to clipboard...");
 
-  // 1. Copy image to clipboard automatically
+  // 1. Copy image to clipboard automatically (using Promise-based constructor to satisfy browser gesture rules)
   try {
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const item = new ClipboardItem({ "image/png": blob });
-      navigator.clipboard.write([item])
-        .then(() => console.log("Auto-copy to clipboard successful"))
-        .catch(err => console.warn("Clipboard write failed", err));
-    }, 'image/png');
+    const clipboardItem = new ClipboardItem({
+      "image/png": new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("Canvas to blob conversion failed"));
+          }
+        }, 'image/png');
+      })
+    });
+    navigator.clipboard.write([clipboardItem])
+      .then(() => {
+        console.log("Auto-copy to clipboard successful");
+      })
+      .catch(err => {
+        console.warn("Clipboard write failed:", err);
+      });
   } catch (e) {
     console.warn("Clipboard API not supported", e);
   }
